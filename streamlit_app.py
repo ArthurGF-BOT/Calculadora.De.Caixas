@@ -20,20 +20,22 @@ st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 # Título com ícone de caixa
 st.title("📦 Distribuição de Caixas PA")
 
-# Filtro de produto (exemplo de futuro com possibilidade de mais produtos)
+# Filtro de produto (para expansão futura)
 produto_selecionado = st.selectbox("Selecione o produto:", ["CVC"])
 
-# Tabela informativa com as caixas disponíveis (agora com a coluna 'Produto')
+# Tabela informativa com as caixas disponíveis
 st.markdown("### Caixas disponíveis:")
 tabela_caixas = pd.DataFrame([
-    {"ID da Caixa": f"Caixa {caixa['id']}", "Capacidade": caixa["capacidade"], "Produto": caixa["produto"]}
+    {
+        "ID da Caixa": f"Caixa {caixa['id']}",
+        "Capacidade": caixa["capacidade"],
+        "Produto": caixa["produto"]
+    }
     for caixa in caixas
 ])
 
-# Convertendo a tabela em HTML para centralizar os valores
+# Estilização da tabela
 tabela_caixas_html = tabela_caixas.to_html(index=False, escape=False)
-
-# Estilizando a tabela para centralizar todas as células usando CSS
 tabela_caixas_html = f"""
 <style>
     .dataframe {{
@@ -48,18 +50,17 @@ tabela_caixas_html = f"""
 </style>
 {tabela_caixas_html}
 """
-
-# Exibindo a tabela centralizada
 st.markdown(tabela_caixas_html, unsafe_allow_html=True)
 
-# Campo de entrada
+# Entrada de quantidade
 quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1, value=1)
 
-# Função de cálculo
+# Função para calcular a distribuição ideal
 def calcular_distribuicao(quantidade):
     restante = quantidade
     resultado = []
 
+    # Preenchimento inicial com maiores capacidades
     for caixa in caixas:
         if restante <= 0:
             break
@@ -68,12 +69,12 @@ def calcular_distribuicao(quantidade):
             resultado.append((caixa["id"], qtd, caixa["capacidade"]))
             restante -= qtd * caixa["capacidade"]
 
+    # Se ainda sobrar, tentar encontrar melhor combinação para sobra
     if restante > 0:
-        # Função que encontra a melhor combinação de caixas para cobrir a sobra
         def encontrar_melhor_combinacao(restante):
             melhor_excesso = float('inf')
             melhor_combo = None
-            for r in range(1, 5):  # Limita combinações a 4 caixas (ajustável)
+            for r in range(1, 5):  # Até 4 caixas combinadas
                 for combo in combinations_with_replacement(caixas, r):
                     soma = sum(c["capacidade"] for c in combo)
                     if soma >= restante and (soma - restante) < melhor_excesso:
@@ -85,7 +86,6 @@ def calcular_distribuicao(quantidade):
 
         melhor_combo = encontrar_melhor_combinacao(restante)
         if melhor_combo:
-            # Contando as ocorrências de cada caixa usando Counter
             contador = Counter([caixa["id"] for caixa in melhor_combo])
             for id_caixa, qtd in contador.items():
                 capacidade = next(caixa["capacidade"] for caixa in caixas if caixa["id"] == id_caixa)
@@ -95,7 +95,8 @@ def calcular_distribuicao(quantidade):
 
 # Cálculo de aproveitamento
 def calcular_aproveitamento(distribuicao, total):
-    usado = sum(q * cap for _, q, cap in distribuicao)
+    usado = sum(min(cap * qtd, total - sum(min(cap * q, total) for _, q, cap in distribuicao[:i]))
+                for i, (id_, qtd, cap) in enumerate(distribuicao))
     return (total / usado) * 100 if usado else 0
 
 # Botão de ação
@@ -104,16 +105,28 @@ if st.button("Calcular"):
         time.sleep(0.5)
 
     dist = calcular_distribuicao(quantidade)
-    aproveitamento = calcular_aproveitamento(dist, quantidade)
-    total_usado = sum(q * cap for _, q, cap in dist)
+    total_caixas_grandes = sum(q for _, q, _ in dist)
 
-    # Exibe resultado da distribuição como texto
+    # Exibir resultados detalhados
     st.markdown("## Resultado da distribuição:")
-    for id_caixa, qtd, _ in dist:
-        st.markdown(f"- **Caixa {id_caixa}:** {qtd} unidades")
+    restante_para_embalar = quantidade
+    for id_caixa, qtd, capacidade in dist:
+        for _ in range(qtd):
+            if restante_para_embalar <= 0:
+                break
+            armazenado = min(capacidade, restante_para_embalar)
+            restante_para_embalar -= armazenado
+            st.markdown(f"- **Caixa {id_caixa}** → {armazenado} caixinhas pequenas")
 
-    st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
-    st.markdown(f"**Capacidade usada:** {total_usado}")
+    total_usado = quantidade  # já usamos exatamente o que o usuário pediu
+    capacidade_total_usada = sum(min(qtd * capacidade, quantidade - sum(min(c * q, quantidade) for _, q, c in dist[:i]))
+                                 for i, (id_, qtd, capacidade) in enumerate(dist))
+    aproveitamento = (total_usado / capacidade_total_usada) * 100 if capacidade_total_usada else 0
+
+    # Exibir totais
+    st.markdown(f"**Total embalado:** {total_usado} caixinhas pequenas")
+    st.markdown(f"**Capacidade usada:** {capacidade_total_usada}")
     st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
+    st.markdown(f"**Total de caixas grandes usadas:** {total_caixas_grandes}")
 
     st.success("Distribuição calculada com sucesso!")
