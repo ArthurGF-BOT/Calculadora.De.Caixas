@@ -12,8 +12,7 @@ caixas = sorted([
     {"id": 16, "capacidade": 27, "produto": "CVC"},
     {"id": 19, "capacidade": 16, "produto": "CVC"},
     {"id": 20, "capacidade": 41, "produto": "CVC"},
-    {"id": 21, "capacidade": 48, "produto": "CVC"},
-    {"id": 21, "capacidade": 30, "produto": "MHE"}
+    {"id": 21, "capacidade": 48, "produto": "CVC"}
 ], key=lambda x: x["capacidade"], reverse=True)
 
 st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
@@ -22,7 +21,7 @@ st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 st.title("📦 Distribuição de Caixas PA")
 
 # Filtro de produto (exemplo de futuro com possibilidade de mais produtos)
-produto_selecionado = st.selectbox("Selecione o produto:", ["CVC", "MHE"])
+produto_selecionado = st.selectbox("Selecione o produto:", ["CVC"])
 
 # Tabela informativa com as caixas disponíveis (agora com a coluna 'Produto')
 st.markdown("### Caixas disponíveis:")
