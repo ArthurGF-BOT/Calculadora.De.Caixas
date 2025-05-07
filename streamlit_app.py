@@ -1,6 +1,8 @@
 import streamlit as st
 import time
 import pandas as pd
+from itertools import combinations_with_replacement
+from collections import Counter
 
 # Lista de caixas disponíveis (ordenadas por capacidade decrescente)
 caixas = sorted([
@@ -51,11 +53,7 @@ tabela_caixas_html = f"""
 st.markdown(tabela_caixas_html, unsafe_allow_html=True)
 
 # Campo de entrada
-quantidade = st.number_input("Quantidade de caixas pequenas (apenas número par):", min_value=1, step=1, value=2)
-
-# Verificando se o número inserido é par
-if quantidade % 2 != 0:
-    st.error("Por favor, insira um número par para a quantidade de caixas.")
+quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1, value=1)
 
 # Função de cálculo
 def calcular_distribuicao(quantidade):
@@ -71,10 +69,27 @@ def calcular_distribuicao(quantidade):
             restante -= qtd * caixa["capacidade"]
 
     if restante > 0:
-        for caixa in caixas:
-            if caixa["capacidade"] >= restante:
-                resultado.append((caixa["id"], 1, caixa["capacidade"]))
-                break
+        # Função que encontra a melhor combinação de caixas para cobrir a sobra
+        def encontrar_melhor_combinacao(restante):
+            melhor_excesso = float('inf')
+            melhor_combo = None
+            for r in range(1, 5):  # Limita combinações a 4 caixas (ajustável)
+                for combo in combinations_with_replacement(caixas, r):
+                    soma = sum(c["capacidade"] for c in combo)
+                    if soma >= restante and (soma - restante) < melhor_excesso:
+                        melhor_excesso = soma - restante
+                        melhor_combo = combo
+                        if melhor_excesso == 0:
+                            return melhor_combo
+            return melhor_combo
+
+        melhor_combo = encontrar_melhor_combinacao(restante)
+        if melhor_combo:
+            # Contando as ocorrências de cada caixa usando Counter
+            contador = Counter([caixa["id"] for caixa in melhor_combo])
+            for id_caixa, qtd in contador.items():
+                capacidade = next(caixa["capacidade"] for caixa in caixas if caixa["id"] == id_caixa)
+                resultado.append((id_caixa, qtd, capacidade))
 
     return resultado
 
@@ -84,7 +99,7 @@ def calcular_aproveitamento(distribuicao, total):
     return (total / usado) * 100 if usado else 0
 
 # Botão de ação
-if quantidade % 2 == 0 and st.button("Calcular"):
+if st.button("Calcular"):
     with st.spinner("Calculando..."):
         time.sleep(0.5)
 
