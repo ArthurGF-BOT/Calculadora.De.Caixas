@@ -51,7 +51,11 @@ tabela_caixas_html = f"""
 st.markdown(tabela_caixas_html, unsafe_allow_html=True)
 
 # Campo de entrada
-quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1, value=1)
+quantidade = st.number_input("Quantidade de caixas pequenas (apenas número par):", min_value=1, step=1, value=2)
+
+# Verificando se o número inserido é par
+if quantidade % 2 != 0:
+    st.error("Por favor, insira um número par para a quantidade de caixas.")
 
 # Função de cálculo
 def calcular_distribuicao(quantidade):
@@ -80,7 +84,7 @@ def calcular_aproveitamento(distribuicao, total):
     return (total / usado) * 100 if usado else 0
 
 # Botão de ação
-if st.button("Calcular"):
+if quantidade % 2 == 0 and st.button("Calcular"):
     with st.spinner("Calculando..."):
         time.sleep(0.5)
 
