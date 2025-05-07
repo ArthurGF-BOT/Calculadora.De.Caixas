@@ -22,7 +22,7 @@ st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 st.title("📦 Distribuição de Caixas PA")
 
 # Filtro de produto (exemplo de futuro com possibilidade de mais produtos)
-produto_selecionado = st.selectbox("Selecione o produto:", ["CVC"])
+produto_selecionado = st.selectbox("Selecione o produto:", ["CVC", "MHE"])
 
 # Tabela informativa com as caixas disponíveis (agora com a coluna 'Produto')
 st.markdown("### Caixas disponíveis:")
