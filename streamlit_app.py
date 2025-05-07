@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import pandas as pd
 
 # Lista de caixas disponíveis (ordenadas por capacidade decrescente)
 caixas = sorted([
@@ -16,6 +17,14 @@ st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 
 # Título com ícone de caixa
 st.title("📦 Distribuição de Caixas para Embalagem")
+
+# Tabela informativa com as caixas disponíveis
+st.markdown("### Caixas disponíveis:")
+tabela_caixas = pd.DataFrame([
+    {"ID da Caixa": f"Caixa {caixa['id']}", "Capacidade": caixa["capacidade"]}
+    for caixa in caixas
+])
+st.dataframe(tabela_caixas.style.hide(axis="index"), use_container_width=True)
 
 # Campo de entrada
 quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1, value=1)
@@ -55,14 +64,13 @@ if st.button("Calcular"):
     aproveitamento = calcular_aproveitamento(dist, quantidade)
     total_usado = sum(q * cap for _, q, cap in dist)
 
-    # Exibição do resultado
-    st.markdown("## Resultado:")
+    # Exibe resultado da distribuição como texto
+    st.markdown("## Resultado da distribuição:")
     for id_caixa, qtd, _ in dist:
-        st.markdown(f"- **{qtd}x Caixa {id_caixa}**")
-    
+        st.markdown(f"- **Caixa {id_caixa}:** {qtd} unidades")
+
     st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
     st.markdown(f"**Capacidade usada:** {total_usado}")
     st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
 
-    # Confirmação visual
     st.success("Distribuição calculada com sucesso!")
