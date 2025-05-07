@@ -16,7 +16,7 @@ caixas = sorted([
 st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 
 # Título com ícone de caixa
-st.title("📦 Distribuição de Caixas para Embalagem")
+st.title("📦 Distribuição de Caixas PA")
 
 # Tabela informativa com as caixas disponíveis
 st.markdown("### Caixas disponíveis:")
