@@ -11,18 +11,16 @@ caixas = sorted([
     {"id": 21, "capacidade": 48}
 ], key=lambda x: x["capacidade"], reverse=True)
 
+# Função para calcular a distribuição
 def calcular_distribuicao(quantidade, limiar=0.51):
     restante = quantidade
     resultado = []
 
-    for i, caixa in enumerate(caixas):
+    for caixa in caixas:
         if restante <= 0:
             break
-
         capacidade = caixa["capacidade"]
-
         qtd_completa = restante // capacidade
-
         if qtd_completa > 0:
             resultado.append((caixa["id"], qtd_completa, capacidade))
             restante -= qtd_completa * capacidade
@@ -32,26 +30,24 @@ def calcular_distribuicao(quantidade, limiar=0.51):
                 resultado.append((caixa["id"], 1, capacidade))
                 restante = 0
             else:
-                caixa_menor_encontrada = False
                 for c_menor in reversed(caixas):
                     if c_menor["capacidade"] >= restante:
                         resultado.append((c_menor["id"], 1, c_menor["capacidade"]))
                         restante = 0
-                        caixa_menor_encontrada = True
                         break
-                if not caixa_menor_encontrada:
+                else:
                     resultado.append((caixa["id"], 1, capacidade))
                     restante = 0
 
     return resultado
 
+# Cálculo de aproveitamento
 def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# Configuração da página
+# Interface do Streamlit
 st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
-
 st.title("📦 Distribuição de Caixas para Embalagem")
 
 quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1)
@@ -62,8 +58,17 @@ if st.button("Calcular"):
     total_usado = sum(q * cap for _, q, cap in dist)
 
     st.markdown("## Resultado:")
-    for id_caixa, qtd, _ in dist:
-        st.markdown(f"- **{qtd}x Caixa {id_caixa}**")
+    st.markdown("### Detalhamento por caixa:")
+
+    caixinhas_usadas = 0
+    for id_caixa, qtd, capacidade in dist:
+        for _ in range(qtd):
+            if quantidade - caixinhas_usadas >= capacidade:
+                dentro = capacidade
+            else:
+                dentro = quantidade - caixinhas_usadas
+            caixinhas_usadas += dentro
+            st.markdown(f"- **Caixa {id_caixa}**: {dentro} caixinhas")
 
     st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
     st.markdown(f"**Capacidade usada:** {total_usado}")
