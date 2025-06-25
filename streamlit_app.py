@@ -11,7 +11,6 @@ caixas = sorted([
     {"id": 21, "capacidade": 48}
 ], key=lambda x: x["capacidade"], reverse=True)
 
-# Função para calcular a distribuição
 def calcular_distribuicao(quantidade, limiar=0.51):
     restante = quantidade
     resultado = []
@@ -41,12 +40,11 @@ def calcular_distribuicao(quantidade, limiar=0.51):
 
     return resultado
 
-# Cálculo de aproveitamento
 def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# Interface do Streamlit
+# Streamlit app
 st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 st.title("📦 Distribuição de Caixas para Embalagem")
 
@@ -60,14 +58,15 @@ if st.button("Calcular"):
     st.markdown("## Resultado:")
     st.markdown("### Detalhamento por caixa:")
 
-    caixinhas_usadas = 0
+    caixinhas_restantes = quantidade
+
     for id_caixa, qtd, capacidade in dist:
-        for _ in range(qtd):
-            if quantidade - caixinhas_usadas >= capacidade:
+        for i in range(qtd):
+            if caixinhas_restantes >= capacidade:
                 dentro = capacidade
             else:
-                dentro = quantidade - caixinhas_usadas
-            caixinhas_usadas += dentro
+                dentro = caixinhas_restantes
+            caixinhas_restantes -= dentro
             st.markdown(f"- **Caixa {id_caixa}**: {dentro} caixinhas")
 
     st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
