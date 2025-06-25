@@ -1,4 +1,4 @@
-import streamlit as st
+ streamlit as st
 import pandas as pd
 
 # Definição das capacidades para cada produto
