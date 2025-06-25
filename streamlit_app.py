@@ -1,9 +1,10 @@
 import streamlit as st
+import pandas as pd
 
-# 🧱 Configuração da página
+# Configuração da página
 st.set_page_config(page_title="Distribuição de Caixas", layout="wide")
 
-# 📦 Lista de caixas disponíveis (ordenadas por capacidade decrescente)
+# Lista de caixas disponíveis
 caixas = sorted([
     {"id": 9,  "capacidade": 4},
     {"id": 12, "capacidade": 6},
@@ -14,7 +15,6 @@ caixas = sorted([
     {"id": 21, "capacidade": 48}
 ], key=lambda x: x["capacidade"], reverse=True)
 
-# 🔢 Função principal de distribuição
 def calcular_distribuicao(quantidade, limiar=0.51):
     restante = quantidade
     resultado = []
@@ -44,41 +44,61 @@ def calcular_distribuicao(quantidade, limiar=0.51):
 
     return resultado
 
-# 📊 Cálculo do aproveitamento
 def calcular_aproveitamento(distribuicao, total):
-    usado = sum(q * cap for _, q, cap in distribucao)
+    usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# 🖥️ Título da aplicação
+# Interface
 st.title("📦 Distribuição de Caixas para Embalagem")
 
-# 📝 Formulário com suporte a ENTER
 with st.form("formulario"):
     quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1)
     calcular = st.form_submit_button("Calcular")
 
-# 🚀 Quando o usuário envia o formulário
 if calcular:
     distribuicao = calcular_distribuicao(quantidade)
     aproveitamento = calcular_aproveitamento(distribuicao, quantidade)
     total_usado = sum(q * cap for _, q, cap in distribuicao)
 
-    st.markdown("## 📦 Resultado:")
-    st.markdown("### Detalhamento por caixa:")
+    col1, col2 = st.columns([2, 1])  # layout dividido
 
-    restantes = quantidade
-    for id_caixa, qtd, capacidade in distribuicao:
-        for _ in range(qtd):
-            if restantes >= capacidade:
-                dentro = capacidade
-            else:
-                dentro = restantes
-            restantes -= dentro
-            st.markdown(f"- **Caixa {id_caixa}**: {dentro} caixinhas")
+    with col1:
+        st.markdown("## 📦 Resultado:")
+        st.markdown("### Detalhamento por caixa:")
 
-    st.markdown("")
-    st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
-    st.markdown(f"**Capacidade usada:** {total_usado}")
-    st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
+        restantes = quantidade
+        for id_caixa, qtd, capacidade in distribuicao:
+            for _ in range(qtd):
+                if restantes >= capacidade:
+                    dentro = capacidade
+                else:
+                    dentro = restantes
+                restantes -= dentro
+                st.markdown(f"- **Caixa {id_caixa}**: {dentro} caixinhas")
 
-    st.success("Distribuição calculada com sucesso!")
+        st.markdown("")
+        st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
+        st.markdown(f"**Capacidade usada:** {total_usado}")
+        st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
+        st.success("Distribuição calculada com sucesso!")
+
+    with col2:
+        st.markdown("## 📊 Tabela Resumo")
+        dados_tabela = []
+        restantes = quantidade
+        for id_caixa, qtd, capacidade in distribuicao:
+            for _ in range(qtd):
+                if restantes >= capacidade:
+                    dentro = capacidade
+                else:
+                    dentro = restantes
+                restantes -= dentro
+                dados_tabela.append({
+                    "Caixa": id_caixa,
+                    "Capacidade": capacidade,
+                    "Caixinhas por unidade": dentro
+                })
+
+        df = pd.DataFrame(dados_tabela)
+        resumo = df.groupby(["Caixa", "Capacidade", "Caixinhas por unidade"]).size().reset_index(name="Quantidade de caixas")
+        st.dataframe(resumo, use_container_width=True)
