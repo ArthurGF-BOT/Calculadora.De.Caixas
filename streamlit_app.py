@@ -44,7 +44,7 @@ def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# Streamlit app
+# Interface do Streamlit
 st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
 st.title("📦 Distribuição de Caixas para Embalagem")
 
@@ -55,13 +55,13 @@ if st.button("Calcular"):
     aproveitamento = calcular_aproveitamento(dist, quantidade)
     total_usado = sum(q * cap for _, q, cap in dist)
 
-    st.markdown("## Resultado:")
+    st.markdown("## 📦 Resultado:")
     st.markdown("### Detalhamento por caixa:")
 
     caixinhas_restantes = quantidade
 
     for id_caixa, qtd, capacidade in dist:
-        for i in range(qtd):
+        for _ in range(qtd):
             if caixinhas_restantes >= capacidade:
                 dentro = capacidade
             else:
@@ -69,8 +69,9 @@ if st.button("Calcular"):
             caixinhas_restantes -= dentro
             st.markdown(f"- **Caixa {id_caixa}**: {dentro} caixinhas")
 
-    st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
-    st.markdown(f"**Capacidade usada:** {total_usado}")
-    st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
+    st.markdown("")
+    st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")  
+    st.markdown(f"**Capacidade usada:** {total_usado}")  
+    st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")  
 
     st.success("Distribuição calculada com sucesso!")
