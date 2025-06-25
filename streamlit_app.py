@@ -92,4 +92,26 @@ if st.session_state.calcular:
             st.write(f"- Caixa {id_caixa}: {dentro} caixinhas")
             linhas.append({
                 'Caixa': id_caixa,
-                'Capa
+                'Capacidade': capacidade,
+                'Caixinhas por unidade': dentro
+            })
+
+    st.markdown("---")
+    st.markdown(f"**Total embalado:** {quantidade} caixinhas")
+    st.markdown(f"**Capacidade usada:** {total_usado}")
+    st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
+
+    # Exibição da tabela formatada
+    df = pd.DataFrame(linhas)
+    resumo = df.groupby(['Caixa', 'Capacidade', 'Caixinhas por unidade']) \
+               .size().reset_index(name='Quantidade de caixas')
+
+    styled_table = resumo.style.set_properties(**{
+        'text-align': 'center'
+    }).set_table_styles([{
+        'selector': 'th',
+        'props': [('text-align', 'center')]
+    }])
+
+    st.markdown("### Tabela Resumo")
+    st.dataframe(styled_table, use_container_width=True, hide_index=True)
