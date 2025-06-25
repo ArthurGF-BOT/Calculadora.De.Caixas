@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Distribuição de Caixas", layout="wide")
-
 # Definição das capacidades para cada produto
 caixas_cvc = sorted([
     {"id": 9,  "capacidade": 4},
@@ -57,63 +55,36 @@ def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# --- Interface ---
+# Interface Streamlit
+st.title("Distribuição de Caixas por Produto")
 
-st.title("📦 Distribuição de Caixas para Embalagem")
+produto = st.selectbox("Selecione o produto:", ['CVC', 'MAP'])
+quantidade = st.number_input("Quantidade de caixinhas:", min_value=1, value=1, step=1)
 
-produto = st.selectbox("Selecione o produto:", ["CVC", "MAP"])
-
-# Seleciona a lista correta
-caixas = caixas_cvc if produto == "CVC" else caixas_map
-
-with st.form("formulario"):
-    quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1)
-    calcular = st.form_submit_button("Calcular")
-
-if calcular:
+if st.button("Calcular"):
+    caixas = caixas_cvc if produto == 'CVC' else caixas_map
     distribuicao = calcular_distribuicao(quantidade, caixas)
     aproveitamento = calcular_aproveitamento(distribuicao, quantidade)
     total_usado = sum(q * cap for _, q, cap in distribuicao)
 
-    col1, col2 = st.columns([2, 1])
+    st.subheader(f"📦 Resultado para produto {produto}:")
+    st.markdown("**Detalhamento por caixa:**")
 
-    with col1:
-        st.markdown("## 📦 Resultado:")
-        st.markdown("### Detalhamento por caixa:")
+    restantes = quantidade
+    linhas = []
+    for id_caixa, qtd, capacidade in distribuicao:
+        for _ in range(qtd):
+            dentro = capacidade if restantes >= capacidade else restantes
+            restantes -= dentro
+            st.write(f"- Caixa {id_caixa}: {dentro} caixinhas")
+            linhas.append({'Caixa': id_caixa, 'Capacidade': capacidade, 'Caixinhas por unidade': dentro})
 
-        restantes = quantidade
-        for id_caixa, qtd, capacidade in distribuicao:
-            for _ in range(qtd):
-                if restantes >= capacidade:
-                    dentro = capacidade
-                else:
-                    dentro = restantes
-                restantes -= dentro
-                st.markdown(f"- **Caixa {id_caixa}**: {dentro} caixinhas")
+    st.markdown("---")
+    st.markdown(f"**Total embalado:** {quantidade} caixinhas")
+    st.markdown(f"**Capacidade usada:** {total_usado}")
+    st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
 
-        st.markdown("")
-        st.markdown(f"**Total embalado:** {quantidade} caixas pequenas")
-        st.markdown(f"**Capacidade usada:** {total_usado}")
-        st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
-        st.success("Distribuição calculada com sucesso!")
-
-    with col2:
-        st.markdown("## 📊 Tabela Resumo")
-        dados_tabela = []
-        restantes = quantidade
-        for id_caixa, qtd, capacidade in distribuicao:
-            for _ in range(qtd):
-                if restantes >= capacidade:
-                    dentro = capacidade
-                else:
-                    dentro = restantes
-                restantes -= dentro
-                dados_tabela.append({
-                    "Caixa": id_caixa,
-                    "Capacidade": capacidade,
-                    "Caixinhas por unidade": dentro
-                })
-
-        df = pd.DataFrame(dados_tabela)
-        resumo = df.groupby(["Caixa", "Capacidade", "Caixinhas por unidade"]).size().reset_index(name="Quantidade de caixas")
-        st.dataframe(resumo, use_container_width=True)
+    # Exibição de tabela resumo
+    df = pd.DataFrame(linhas)
+    resumo = df.groupby(['Caixa', 'Capacidade', 'Caixinhas por unidade']).size().reset_index(name='Quantidade de caixas')
+    st.dataframe(resumo)
