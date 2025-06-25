@@ -1,12 +1,11 @@
 import streamlit as st
 import pandas as pd
 
-# Configuração da página
 st.set_page_config(page_title="Calculadora de Caixas", layout="wide")
 
-# Dados de capacidade das caixas
+# Dados das caixas
 caixas_cvc = sorted([
-    {"id": 9,  "capacidade": 4},
+    {"id": 9, "capacidade": 4},
     {"id": 12, "capacidade": 6},
     {"id": 15, "capacidade": 18},
     {"id": 16, "capacidade": 27},
@@ -16,7 +15,7 @@ caixas_cvc = sorted([
 ], key=lambda x: x["capacidade"], reverse=True)
 
 caixas_map = sorted([
-    {"id": 9,  "capacidade": 4},
+    {"id": 9, "capacidade": 4},
     {"id": 12, "capacidade": 6},
     {"id": 15, "capacidade": 18},
     {"id": 16, "capacidade": 27},
@@ -58,22 +57,22 @@ def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# Título da aplicação
+# Título
 st.title("Cálculo de Distribuição de Caixas")
 
-# Inicialização do estado
+# Estado
 if "calcular" not in st.session_state:
     st.session_state.calcular = False
 
-# Entradas do usuário
+# Entradas
 produto = st.selectbox("Selecione o produto:", ['CVC', 'MAP'])
 quantidade = st.number_input("Quantidade de caixinhas:", min_value=1, value=1, step=1)
 
-# Botão de cálculo
+# Botão
 if st.button("Calcular"):
     st.session_state.calcular = True
 
-# Exibição dos resultados
+# Resultado
 if st.session_state.calcular:
     caixas = caixas_cvc if produto == 'CVC' else caixas_map
     distribuicao = calcular_distribuicao(quantidade, caixas)
@@ -81,15 +80,16 @@ if st.session_state.calcular:
     total_usado = sum(q * cap for _, q, cap in distribuicao)
 
     st.subheader(f"Resultado para produto {produto}")
-    st.markdown("**Detalhamento por caixa:**")
+    st.markdown("**Distribuição das caixas:**")
 
     restantes = quantidade
     linhas = []
+
     for id_caixa, qtd, capacidade in distribuicao:
+        st.write(f"{qtd}x Caixa {id_caixa}")
         for _ in range(qtd):
             dentro = capacidade if restantes >= capacidade else restantes
             restantes -= dentro
-            st.write(f"- Caixa {id_caixa}: {dentro} caixinhas")
             linhas.append({
                 'Caixa': id_caixa,
                 'Capacidade': capacidade,
@@ -101,7 +101,7 @@ if st.session_state.calcular:
     st.markdown(f"**Capacidade usada:** {total_usado}")
     st.markdown(f"**Aproveitamento:** {aproveitamento:.2f}%")
 
-    # Exibição da tabela formatada
+    # Tabela resumo
     df = pd.DataFrame(linhas)
     resumo = df.groupby(['Caixa', 'Capacidade', 'Caixinhas por unidade']) \
                .size().reset_index(name='Quantidade de caixas')
