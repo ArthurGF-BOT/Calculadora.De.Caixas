@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(page_title="Calculadora de Caixas", layout="wide")
+
 # Definição das capacidades para cada produto
 caixas_cvc = sorted([
     {"id": 9,  "capacidade": 4},
