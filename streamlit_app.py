@@ -3,13 +3,7 @@ import pandas as pd
 
 # Definição das capacidades para cada produto
 caixas_cvc = sorted([
-    {"id": 9,  "capacidade": 4},
-    {"id": 12, "capacidade": 6},
-    {"id": 15, "capacidade": 18},
-    {"id": 16, "capacidade": 27},
-    {"id": 19, "capacidade": 16},
-    {"id": 20, "capacidade": 41},
-    {"id": 21, "capacidade": 48}
+  
 ], key=lambda x: x["capacidade"], reverse=True)
 
 caixas_map = sorted([
