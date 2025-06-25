@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# Configuração da página
 st.set_page_config(page_title="Distribuição de Caixas", layout="wide")
 
-# Lista de caixas disponíveis
 caixas = sorted([
     {"id": 9,  "capacidade": 4},
     {"id": 12, "capacidade": 6},
@@ -48,7 +46,6 @@ def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# Interface
 st.title("📦 Distribuição de Caixas para Embalagem")
 
 with st.form("formulario"):
@@ -60,7 +57,7 @@ if calcular:
     aproveitamento = calcular_aproveitamento(distribuicao, quantidade)
     total_usado = sum(q * cap for _, q, cap in distribuicao)
 
-    col1, col2 = st.columns([2, 1])  # layout dividido
+    col1, col2 = st.columns([2, 1])
 
     with col1:
         st.markdown("## 📦 Resultado:")
