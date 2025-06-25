@@ -1,9 +1,29 @@
- streamlit as st
+import streamlit as st
 import pandas as pd
 
 # Definição das capacidades para cada produto
 caixas_cvc = sorted([
-  _distribuicao(quantidade, caixas, limiar=0.51):
+    {"id": 9,  "capacidade": 4},
+    {"id": 12, "capacidade": 6},
+    {"id": 15, "capacidade": 18},
+    {"id": 16, "capacidade": 27},
+    {"id": 19, "capacidade": 16},
+    {"id": 20, "capacidade": 41},
+    {"id": 21, "capacidade": 48}
+], key=lambda x: x["capacidade"], reverse=True)
+
+caixas_map = sorted([
+    {"id": 9,  "capacidade": 4},
+    {"id": 12, "capacidade": 6},
+    {"id": 15, "capacidade": 18},
+    {"id": 16, "capacidade": 27},
+    {"id": 19, "capacidade": 5},
+    {"id": 20, "capacidade": 10},
+    {"id": 21, "capacidade": 18}
+], key=lambda x: x["capacidade"], reverse=True)
+
+# Funções auxiliares
+def calcular_distribuicao(quantidade, caixas, limiar=0.51):
     restante = quantidade
     resultado = []
 
