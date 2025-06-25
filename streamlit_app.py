@@ -1,5 +1,8 @@
 import streamlit as st
 
+# Configuração de layout wide (ultrawide)
+st.set_page_config(page_title="Distribuição de Caixas", layout="wide")
+
 # Lista de caixas disponíveis (ordenadas por capacidade decrescente)
 caixas = sorted([
     {"id": 9,  "capacidade": 4},
@@ -44,13 +47,15 @@ def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
-# Interface do Streamlit
-st.set_page_config(page_title="Distribuição de Caixas", layout="centered")
+# Interface
 st.title("📦 Distribuição de Caixas para Embalagem")
 
-quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1)
+# FORM: ativa o botão com Enter
+with st.form(key="formulario"):
+    quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1)
+    submitted = st.form_submit_button("Calcular")
 
-if st.button("Calcular"):
+if submitted:
     dist = calcular_distribuicao(quantidade)
     aproveitamento = calcular_aproveitamento(dist, quantidade)
     total_usado = sum(q * cap for _, q, cap in dist)
