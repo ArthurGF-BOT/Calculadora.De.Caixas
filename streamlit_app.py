@@ -1,7 +1,9 @@
 import streamlit as st
 
-st.title("Teste Streamlit")
+st.title("🔧 Teste mínimo Streamlit")
+
 produto = st.selectbox("Selecione o produto:", ['CVC', 'MAP'])
 st.write("Produto selecionado:", produto)
+
 if st.button("Calcular"):
-    st.write("Botão pressionado!")
+    st.success("Botão pressionado com sucesso!")
