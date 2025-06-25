@@ -3,7 +3,8 @@ import pandas as pd
 
 st.set_page_config(page_title="Distribuição de Caixas", layout="wide")
 
-caixas = sorted([
+# Definição das capacidades para cada produto
+caixas_cvc = sorted([
     {"id": 9,  "capacidade": 4},
     {"id": 12, "capacidade": 6},
     {"id": 15, "capacidade": 18},
@@ -13,7 +14,17 @@ caixas = sorted([
     {"id": 21, "capacidade": 48}
 ], key=lambda x: x["capacidade"], reverse=True)
 
-def calcular_distribuicao(quantidade, limiar=0.51):
+caixas_map = sorted([
+    {"id": 9,  "capacidade": 4},
+    {"id": 12, "capacidade": 6},
+    {"id": 15, "capacidade": 18},
+    {"id": 16, "capacidade": 27},
+    {"id": 19, "capacidade": 5},
+    {"id": 20, "capacidade": 10},
+    {"id": 21, "capacidade": 18}
+], key=lambda x: x["capacidade"], reverse=True)
+
+def calcular_distribuicao(quantidade, caixas, limiar=0.51):
     restante = quantidade
     resultado = []
 
@@ -46,14 +57,21 @@ def calcular_aproveitamento(distribuicao, total):
     usado = sum(q * cap for _, q, cap in distribuicao)
     return (total / usado) * 100 if usado else 0
 
+# --- Interface ---
+
 st.title("📦 Distribuição de Caixas para Embalagem")
+
+produto = st.selectbox("Selecione o produto:", ["CVC", "MAP"])
+
+# Seleciona a lista correta
+caixas = caixas_cvc if produto == "CVC" else caixas_map
 
 with st.form("formulario"):
     quantidade = st.number_input("Quantidade de caixas pequenas:", min_value=1, step=1)
     calcular = st.form_submit_button("Calcular")
 
 if calcular:
-    distribuicao = calcular_distribuicao(quantidade)
+    distribuicao = calcular_distribuicao(quantidade, caixas)
     aproveitamento = calcular_aproveitamento(distribuicao, quantidade)
     total_usado = sum(q * cap for _, q, cap in distribuicao)
 
